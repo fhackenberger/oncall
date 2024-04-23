@@ -4,7 +4,7 @@ from enum import Enum
 from typing import Optional
 from uuid import uuid4
 
-from lib import oncall_api_client
+from lib.oncall_api_client import OnCallAPIClient
 from lib.pagerduty.config import (
     SCHEDULE_MIGRATION_MODE,
     SCHEDULE_MIGRATION_MODE_ICAL,
@@ -30,7 +30,7 @@ def match_schedule(
 
 def migrate_schedule(schedule: dict, user_id_map: dict[str, str]) -> None:
     if schedule["oncall_schedule"]:
-        oncall_api_client.delete(
+        OnCallAPIClient.delete(
             "schedules/{}".format(schedule["oncall_schedule"]["id"])
         )
 
@@ -45,7 +45,7 @@ def migrate_schedule(schedule: dict, user_id_map: dict[str, str]) -> None:
             "ical_url_primary": schedule["http_cal_url"],
             "team_id": None,
         }
-        oncall_schedule = oncall_api_client.create("schedules", payload)
+        oncall_schedule = OnCallAPIClient.create("schedules", payload)
     else:
         raise ValueError("Invalid schedule migration mode")
 
@@ -198,12 +198,12 @@ class Schedule:
         # Create shifts in OnCall
         shift_ids = []
         for shift in schedule["shifts"]:
-            created_shift = oncall_api_client.create("on_call_shifts", shift)
+            created_shift = OnCallAPIClient.create("on_call_shifts", shift)
             shift_ids.append(created_shift["id"])
 
         # Create schedule in OnCall with shift IDs provided
         schedule["shifts"] = shift_ids
-        new_schedule = oncall_api_client.create("schedules", schedule)
+        new_schedule = OnCallAPIClient.create("schedules", schedule)
 
         return new_schedule
 

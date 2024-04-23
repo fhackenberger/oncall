@@ -1,4 +1,4 @@
-from lib import oncall_api_client
+from lib.oncall_api_client import OnCallAPIClient
 from lib.pagerduty.config import EXPERIMENTAL_MIGRATE_EVENT_RULES_LONG_NAMES
 from lib.pagerduty.utils import find_by_id
 
@@ -49,7 +49,7 @@ def migrate_ruleset(
 ) -> None:
     # Delete existing integration with the same name
     if ruleset["oncall_integration"]:
-        oncall_api_client.delete(
+        OnCallAPIClient.delete(
             "integrations/{}".format(ruleset["oncall_integration"]["id"])
         )
 
@@ -59,7 +59,7 @@ def migrate_ruleset(
         "type": "webhook",
         "team_id": None,
     }
-    integration = oncall_api_client.create("integrations", integration_payload)
+    integration = OnCallAPIClient.create("integrations", integration_payload)
 
     # Migrate rules that are not disabled and not catch-all
     rules = [r for r in ruleset["rules"] if not r["disabled"] and not r["catch_all"]]
@@ -78,7 +78,7 @@ def migrate_ruleset(
             "integration_id": integration["id"],
             "escalation_chain_id": escalation_chain_id,
         }
-        oncall_api_client.create("routes", route_payload)
+        OnCallAPIClient.create("routes", route_payload)
 
     # Migrate catch-all rule
     catch_all_rule = [r for r in ruleset["rules"] if r["catch_all"]][0]
@@ -93,11 +93,11 @@ def migrate_ruleset(
 
     if catch_all_escalation_chain_id:
         # Get the default route and update it to use appropriate escalation chain
-        routes = oncall_api_client.list_all(
+        routes = OnCallAPIClient.list_all(
             "routes/?integration_id={}".format(integration["id"])
         )
         default_route_id = routes[-1]["id"]
-        oncall_api_client.update(
+        OnCallAPIClient.update(
             f"routes/{default_route_id}",
             {"escalation_chain_id": catch_all_escalation_chain_id},
         )

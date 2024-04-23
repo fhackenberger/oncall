@@ -2,7 +2,7 @@ import datetime
 
 from pdpyras import APISession
 
-from lib import oncall_api_client
+from lib.oncall_api_client import OnCallAPIClient
 from lib.pagerduty.config import (
     EXPERIMENTAL_MIGRATE_EVENT_RULES,
     MODE,
@@ -49,14 +49,7 @@ def migrate() -> None:
     print("▶ Fetching users...")
     users = session.list_all("users", params={"include[]": "notification_rules"})
 
-    oncall_users = oncall_api_client.list_all("users")
-    oncall_notification_rules = oncall_api_client.list_all(
-        "personal_notification_rules/?important=false"
-    )
-    for user in oncall_users:
-        user["notification_rules"] = [
-            rule for rule in oncall_notification_rules if rule["user_id"] == user["id"]
-        ]
+    oncall_users = OnCallAPIClient.list_users_with_notification_rules()
 
     print("▶ Fetching schedules...")
     # Fetch schedules from PagerDuty
@@ -77,11 +70,11 @@ def migrate() -> None:
         schedule["overrides"] = response["overrides"]
 
     # Fetch schedules from OnCall
-    oncall_schedules = oncall_api_client.list_all("schedules")
+    oncall_schedules = OnCallAPIClient.list_all("schedules")
 
     print("▶ Fetching escalation policies...")
     escalation_policies = session.list_all("escalation_policies")
-    oncall_escalation_chains = oncall_api_client.list_all("escalation_chains")
+    oncall_escalation_chains = OnCallAPIClient.list_all("escalation_chains")
 
     print("▶ Fetching integrations...")
     services = session.list_all("services", params={"include[]": "integrations"})
@@ -94,7 +87,7 @@ def migrate() -> None:
             integration["service"] = service
             integrations.append(integration)
 
-    oncall_integrations = oncall_api_client.list_all("integrations")
+    oncall_integrations = OnCallAPIClient.list_all("integrations")
 
     rulesets = None
     if EXPERIMENTAL_MIGRATE_EVENT_RULES:

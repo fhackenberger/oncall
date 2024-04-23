@@ -1,4 +1,4 @@
-from lib import oncall_api_client
+from lib.oncall_api_client import OnCallAPIClient
 from lib.pagerduty.utils import find_by_id, transform_wait_delay
 
 
@@ -30,14 +30,14 @@ def migrate_escalation_policy(
     num_loops = escalation_policy["num_loops"]
 
     if escalation_policy["oncall_escalation_chain"]:
-        oncall_api_client.delete(
+        OnCallAPIClient.delete(
             "escalation_chains/{}".format(
                 escalation_policy["oncall_escalation_chain"]["id"]
             )
         )
 
     oncall_escalation_chain_payload = {"name": name, "team_id": None}
-    oncall_escalation_chain = oncall_api_client.create(
+    oncall_escalation_chain = OnCallAPIClient.create(
         "escalation_chains", oncall_escalation_chain_payload
     )
 
@@ -47,7 +47,7 @@ def migrate_escalation_policy(
         rules, oncall_escalation_chain["id"], users, schedules, num_loops
     )
     for policy in oncall_escalation_policies:
-        oncall_api_client.create("escalation_policies", policy)
+        OnCallAPIClient.create("escalation_policies", policy)
 
 
 def transform_rules(

@@ -1,4 +1,4 @@
-from lib import oncall_api_client
+from lib.oncall_api_client import OnCallAPIClient
 from lib.pagerduty.config import (
     PAGERDUTY_TO_ONCALL_VENDOR_MAP,
     UNSUPPORTED_INTEGRATION_TO_WEBHOOKS,
@@ -55,7 +55,7 @@ def migrate_integration(integration: dict, escalation_policies: list[dict]) -> N
     oncall_escalation_chain = escalation_policy["oncall_escalation_chain"]
 
     if integration["oncall_integration"]:
-        oncall_api_client.delete(
+        OnCallAPIClient.delete(
             "integrations/{}".format(integration["oncall_integration"]["id"])
         )
 
@@ -73,13 +73,13 @@ def create_integration(
 ) -> None:
     payload = {"name": name, "type": integration_type, "team_id": None}
 
-    integration = oncall_api_client.create("integrations", payload)
+    integration = OnCallAPIClient.create("integrations", payload)
 
-    routes = oncall_api_client.list_all(
+    routes = OnCallAPIClient.list_all(
         "routes/?integration_id={}".format(integration["id"])
     )
     default_route_id = routes[0]["id"]
 
-    oncall_api_client.update(
+    OnCallAPIClient.update(
         f"routes/{default_route_id}", {"escalation_chain_id": escalation_chain_id}
     )

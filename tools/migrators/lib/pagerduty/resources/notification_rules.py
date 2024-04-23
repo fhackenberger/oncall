@@ -1,6 +1,6 @@
 import copy
 
-from lib import oncall_api_client
+from lib.oncall_api_client import OnCallAPIClient
 from lib.pagerduty.config import PAGERDUTY_TO_ONCALL_CONTACT_METHOD_MAP
 from lib.pagerduty.utils import remove_duplicates, transform_wait_delay
 
@@ -32,12 +32,12 @@ def migrate_notification_rules(user: dict) -> None:
     )
 
     for rule in oncall_rules:
-        oncall_api_client.create("personal_notification_rules", rule)
+        OnCallAPIClient.create("personal_notification_rules", rule)
 
     if oncall_rules:
         # delete old notification rules if any new rules were created
         for rule in user["oncall_user"]["notification_rules"]:
-            oncall_api_client.delete(
+            OnCallAPIClient.delete(
                 "personal_notification_rules/{}".format(rule["id"])
             )
 

@@ -1,86 +1,61 @@
-from contextlib import suppress
-from time import sleep
-from urllib.parse import urljoin
-
 import requests
-from requests import HTTPError
-from requests.adapters import HTTPAdapter, Retry
 
 from lib.base_config import ONCALL_API_TOKEN, ONCALL_API_URL
+from lib.network import api_call as _api_call
 
 
-def api_call(method: str, path: str, **kwargs) -> requests.Response:
-    url = urljoin(ONCALL_API_URL, path)
+class OnCallAPIClient:
 
-    # Retry on network errors
-    session = requests.Session()
-    retries = Retry(total=5, backoff_factor=0.1)
-    session.mount("http://", HTTPAdapter(max_retries=retries))
-    session.mount("https://", HTTPAdapter(max_retries=retries))
+    @classmethod
+    def api_call(cls, method: str, path: str, **kwargs) -> requests.Response:
+        return _api_call(
+            method, ONCALL_API_URL, path, headers={"Authorization": ONCALL_API_TOKEN}, **kwargs
+        )
 
-    response = session.request(
-        method, url, headers={"Authorization": ONCALL_API_TOKEN}, **kwargs
-    )
-
-    try:
-        response.raise_for_status()
-    except HTTPError as e:
-        if e.response.status_code == 429:
-            cooldown_seconds = int(e.response.headers["Retry-After"])
-            sleep(cooldown_seconds)
-            return api_call(method, path, **kwargs)
-        elif e.response.status_code == 400:
-            resp_json = None
-            with suppress(requests.exceptions.JSONDecodeError):
-                resp_json = response.json()
-
-            # if no JSON payload is available, just raise the original exception
-            if not resp_json:
-                raise
-
-            # this is mostly taken from requests.models.Response.raise_for_status, but with additional JSON payload
-            http_error_msg = (
-                "%s Client Error: %s for url: %s, response payload JSON: %s"
-                % (response.status_code, e.response.reason, response.url, resp_json)
-            )
-            raise requests.exceptions.HTTPError(
-                http_error_msg, response=e.response
-            ) from e
-        else:
-            raise
-
-    return response
-
-
-def list_all(path: str) -> list[dict]:
-    response = api_call("get", path)
-
-    data = response.json()
-    results = data["results"]
-
-    while data["next"]:
-        response = api_call("get", data["next"])
+    @classmethod
+    def list_all(cls, path: str) -> list[dict]:
+        response = cls.api_call("get", path)
 
         data = response.json()
-        results += data["results"]
+        results = data["results"]
 
-    return results
+        while data["next"]:
+            response = cls.api_call("get", data["next"])
 
+            data = response.json()
+            results += data["results"]
 
-def create(path: str, payload: dict) -> dict:
-    response = api_call("post", path, json=payload)
-    return response.json()
+        return results
 
+    @classmethod
+    def create(cls, path: str, payload: dict) -> dict:
+        response = cls.api_call("post", path, json=payload)
+        return response.json()
 
-def delete(path: str) -> None:
-    try:
-        api_call("delete", path)
-    except requests.exceptions.HTTPError as e:
-        # ignore 404s on delete so deleting resources manually while running the script doesn't break it
-        if e.response.status_code != 404:
-            raise
+    @classmethod
+    def delete(cls, path: str) -> None:
+        try:
+            cls.api_call("delete", path)
+        except requests.exceptions.HTTPError as e:
+            # ignore 404s on delete so deleting resources manually while running the script doesn't break it
+            if e.response.status_code != 404:
+                raise
 
+    @classmethod
+    def update(cls, path: str, payload: dict) -> dict:
+        response = cls.api_call("put", path, json=payload)
+        return response.json()
 
-def update(path: str, payload: dict) -> dict:
-    response = api_call("put", path, json=payload)
-    return response.json()
+    @classmethod
+    def list_users_with_notification_rules(cls):
+        oncall_users = cls.list_all("users")
+        oncall_notification_rules = cls.list_all(
+            "personal_notification_rules/?important=false"
+        )
+
+        for user in oncall_users:
+            user["notification_rules"] = [
+                rule for rule in oncall_notification_rules if rule["user_id"] == user["id"]
+            ]
+
+        return oncall_users

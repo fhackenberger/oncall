@@ -43,7 +43,7 @@ docker run --rm \
 -e ONCALL_API_URL="<ONCALL_API_URL>" \
 -e ONCALL_API_TOKEN="<ONCALL_API_TOKEN>" \
 -e SPLUNK_API_ID="<SPLUNK_API_ID>" \
--e SPLUNK_API_TOKEN="<SPLUNK_API_TOKEN>" \
+-e SPLUNK_API_KEY="<SPLUNK_API_KEY>" \
 oncall-migrator
 ```
 
@@ -99,7 +99,7 @@ docker run --rm \
 -e ONCALL_API_URL="<ONCALL_API_URL>" \
 -e ONCALL_API_TOKEN="<ONCALL_API_TOKEN>" \
 -e SPLUNK_API_ID="<SPLUNK_API_ID>" \
--e SPLUNK_API_TOKEN="<SPLUNK_API_TOKEN>" \
+-e SPLUNK_API_KEY="<SPLUNK_API_KEY>" \
 oncall-migrator
 ```
 
