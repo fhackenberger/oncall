@@ -1,6 +1,6 @@
-from migrator import oncall_api_client
-from migrator.config import EXPERIMENTAL_MIGRATE_EVENT_RULES_LONG_NAMES
-from migrator.utils import find_by_id
+from lib import oncall_api_client
+from lib.pagerduty.config import EXPERIMENTAL_MIGRATE_EVENT_RULES_LONG_NAMES
+from lib.pagerduty.utils import find_by_id
 
 
 def match_ruleset(

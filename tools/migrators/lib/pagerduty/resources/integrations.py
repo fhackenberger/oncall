@@ -1,9 +1,9 @@
-from migrator import oncall_api_client
-from migrator.config import (
+from lib import oncall_api_client
+from lib.pagerduty.config import (
     PAGERDUTY_TO_ONCALL_VENDOR_MAP,
     UNSUPPORTED_INTEGRATION_TO_WEBHOOKS,
 )
-from migrator.utils import find_by_id
+from lib.pagerduty.utils import find_by_id
 
 
 def match_integration(integration: dict, oncall_integrations: list[dict]) -> None:

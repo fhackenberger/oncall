@@ -1,6 +1,6 @@
-from migrator.resources.escalation_policies import match_escalation_policy
-from migrator.resources.integrations import match_integration
-from migrator.resources.schedules import match_schedule
+from pagerduty.resources.escalation_policies import match_escalation_policy
+from pagerduty.resources.integrations import match_integration
+from pagerduty.resources.schedules import match_schedule
 
 
 def test_match_schedule_name_extra_spaces():

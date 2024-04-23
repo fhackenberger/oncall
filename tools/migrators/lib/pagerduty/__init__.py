@@ -2,14 +2,14 @@ import datetime
 
 from pdpyras import APISession
 
-from migrator import oncall_api_client
-from migrator.config import (
+from lib import oncall_api_client
+from lib.pagerduty.config import (
     EXPERIMENTAL_MIGRATE_EVENT_RULES,
     MODE,
     MODE_PLAN,
     PAGERDUTY_API_TOKEN,
 )
-from migrator.report import (
+from lib.pagerduty.report import (
     TAB,
     escalation_policy_report,
     format_escalation_policy,
@@ -22,27 +22,27 @@ from migrator.report import (
     schedule_report,
     user_report,
 )
-from migrator.resources.escalation_policies import (
+from lib.pagerduty.resources.escalation_policies import (
     match_escalation_policy,
     match_escalation_policy_for_integration,
     migrate_escalation_policy,
 )
-from migrator.resources.integrations import (
+from lib.pagerduty.resources.integrations import (
     match_integration,
     match_integration_type,
     migrate_integration,
 )
-from migrator.resources.notification_rules import migrate_notification_rules
-from migrator.resources.rulesets import match_ruleset, migrate_ruleset
-from migrator.resources.schedules import match_schedule, migrate_schedule
-from migrator.resources.users import (
+from lib.pagerduty.resources.notification_rules import migrate_notification_rules
+from lib.pagerduty.resources.rulesets import match_ruleset, migrate_ruleset
+from lib.pagerduty.resources.schedules import match_schedule, migrate_schedule
+from lib.pagerduty.resources.users import (
     match_user,
     match_users_and_schedules_for_escalation_policy,
     match_users_for_schedule,
 )
 
 
-def main() -> None:
+def migrate() -> None:
     session = APISession(PAGERDUTY_API_TOKEN)
     session.timeout = 20
 
@@ -178,7 +178,3 @@ def main() -> None:
             if not ruleset["flawed_escalation_policies"]:
                 migrate_ruleset(ruleset, escalation_policies, services)
                 print(TAB + format_ruleset(ruleset))
-
-
-if __name__ == "__main__":
-    main()

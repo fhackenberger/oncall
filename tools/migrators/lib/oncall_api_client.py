@@ -6,7 +6,7 @@ import requests
 from requests import HTTPError
 from requests.adapters import HTTPAdapter, Retry
 
-from migrator.config import ONCALL_API_TOKEN, ONCALL_API_URL
+from lib.base_config import ONCALL_API_TOKEN, ONCALL_API_URL
 
 
 def api_call(method: str, path: str, **kwargs) -> requests.Response:

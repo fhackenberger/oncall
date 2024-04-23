@@ -1,8 +1,8 @@
 import copy
 
-from migrator import oncall_api_client
-from migrator.config import PAGERDUTY_TO_ONCALL_CONTACT_METHOD_MAP
-from migrator.utils import remove_duplicates, transform_wait_delay
+from lib import oncall_api_client
+from lib.pagerduty.config import PAGERDUTY_TO_ONCALL_CONTACT_METHOD_MAP
+from lib.pagerduty.utils import remove_duplicates, transform_wait_delay
 
 
 def remove_duplicate_rules_between_waits(rules: list[dict]) -> list[dict]:

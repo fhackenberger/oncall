@@ -4,8 +4,8 @@ from enum import Enum
 from typing import Optional
 from uuid import uuid4
 
-from migrator import oncall_api_client
-from migrator.config import (
+from lib import oncall_api_client
+from lib.pagerduty.config import (
     SCHEDULE_MIGRATION_MODE,
     SCHEDULE_MIGRATION_MODE_ICAL,
     SCHEDULE_MIGRATION_MODE_WEB,

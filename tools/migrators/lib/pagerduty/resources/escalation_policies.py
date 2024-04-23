@@ -1,5 +1,5 @@
-from migrator import oncall_api_client
-from migrator.utils import find_by_id, transform_wait_delay
+from lib import oncall_api_client
+from lib.pagerduty.utils import find_by_id, transform_wait_delay
 
 
 def match_escalation_policy(policy: dict, oncall_escalation_chains: list[dict]) -> None:

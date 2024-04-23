@@ -1,4 +1,4 @@
-from migrator.utils import find_by_id
+from lib.pagerduty.utils import find_by_id
 
 
 def match_user(user: dict, oncall_users: list[dict]) -> None:

@@ -1,10 +1,10 @@
-from migrator.resources.escalation_policies import (
+from pagerduty.resources.escalation_policies import (
     match_escalation_policy,
     match_escalation_policy_for_integration,
 )
-from migrator.resources.integrations import match_integration, match_integration_type
-from migrator.resources.schedules import match_schedule
-from migrator.resources.users import (
+from pagerduty.resources.integrations import match_integration, match_integration_type
+from pagerduty.resources.schedules import match_schedule
+from pagerduty.resources.users import (
     match_user,
     match_users_and_schedules_for_escalation_policy,
     match_users_for_schedule,

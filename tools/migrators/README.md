@@ -1,48 +1,54 @@
-# PagerDuty to Grafana OnCall migrator tool
+# Grafana OnCall migrator tools
 
-This tool helps to migrate your PagerDuty configuration to Grafana OnCall.
+These tools will help you to migrate from various on-call tools to Grafana OnCall.
 
-## Overview
+Currently the migration tool supports migrating from:
 
-Resources that can be migrated using this tool:
+- PagerDuty
+- Splunk OnCall (VictorOps)
 
-- User notification rules
-- On-call schedules
-- Escalation policies
-- Services (integrations)
-- Event rules (experimental, only works with global event rulesets)
+## Getting Started
 
-## Limitations
+1. Make sure you have `docker` installed and running
+2. Build the docker image: `docker build -t oncall-migrator .`
+3. Obtain a Grafana OnCall API token and API URL on the "Settings" page of your Grafana OnCall instance
+4. Depending on which tool you are migrating from, see more specific instructions there:
+  - [PagerDuty](#prerequisites)
+  - [Splunk OnCall](#prerequisites-1)
+5. Run a [migration plan](#migration-plan)
+6. If you are pleased with the results of the migration plan, run the tool in [migrate mode](#migration)
 
-- Not all integration types are supported
-- Delays between migrated notification/escalation rules could be slightly different from original.
-  E.g. if you have a 4-minute delay between rules in PagerDuty, the resulting delay in Grafana OnCall will be 5 minutes
-- Manual changes to PD configuration may be required to migrate some resources
-
-## Prerequisites
-
-1. Make sure you have `docker` installed
-2. Build the docker image: `docker build -t pd-oncall-migrator .`
-3. Obtain a PagerDuty API **user token**: <https://support.pagerduty.com/docs/api-access-keys#generate-a-user-token-rest-api-key>
-4. Obtain a Grafana OnCall API token and API URL on the "Settings" page of your Grafana OnCall instance
-
-## Migration plan
+### Migration Plan
 
 Before starting the migration process, it's useful to see a migration plan by running the tool in `plan` mode:
 
+#### PagerDuty
+
 ```shell
 docker run --rm \
--e PAGERDUTY_API_TOKEN="<PAGERDUTY_API_TOKEN>" \
+-e MIGRATING_FROM="pagerduty" \
+-e MODE="plan" \
 -e ONCALL_API_URL="<ONCALL_API_URL>" \
 -e ONCALL_API_TOKEN="<ONCALL_API_TOKEN>" \
--e MODE="plan" \
-pd-oncall-migrator
+-e PAGERDUTY_API_TOKEN="<PAGERDUTY_API_TOKEN>" \
+oncall-migrator
 ```
 
-Please read the generated report carefully since depending on the content of the report, some PagerDuty resources
-could be not migrated and some existing Grafana OnCall resources could be deleted.
+#### Splunk OnCall
 
-### Example migration plan
+```shell
+docker run --rm \
+-e MIGRATING_FROM="splunk" \
+-e MODE="plan" \
+-e ONCALL_API_URL="<ONCALL_API_URL>" \
+-e ONCALL_API_TOKEN="<ONCALL_API_TOKEN>" \
+-e SPLUNK_API_ID="<SPLUNK_API_ID>" \
+-e SPLUNK_API_TOKEN="<SPLUNK_API_TOKEN>" \
+oncall-migrator
+```
+
+Please read the generated report carefully since depending on the content of the report, some  resources
+could be not migrated and some existing Grafana OnCall resources could be deleted.
 
 ```text
 User notification rules report:
@@ -68,22 +74,61 @@ Integration report:
     ❌ DevOps - Email — cannot find appropriate Grafana OnCall integration type
 ```
 
-## Migration
+### Migration
 
 Once you are happy with the migration report, start the migration by setting the `MODE` environment variable to `migrate`:
 
+#### PagerDuty
+
 ```shell
 docker run --rm \
--e PAGERDUTY_API_TOKEN="<PAGERDUTY_API_TOKEN>" \
+-e MIGRATING_FROM="pagerduty" \
+-e MODE="migrate" \
 -e ONCALL_API_URL="<ONCALL_API_URL>" \
 -e ONCALL_API_TOKEN="<ONCALL_API_TOKEN>" \
+-e PAGERDUTY_API_TOKEN="<PAGERDUTY_API_TOKEN>" \
+oncall-migrator
+```
+
+#### Splunk OnCall
+
+```shell
+docker run --rm \
+-e MIGRATING_FROM="splunk" \
 -e MODE="migrate" \
-pd-oncall-migrator
+-e ONCALL_API_URL="<ONCALL_API_URL>" \
+-e ONCALL_API_TOKEN="<ONCALL_API_TOKEN>" \
+-e SPLUNK_API_ID="<SPLUNK_API_ID>" \
+-e SPLUNK_API_TOKEN="<SPLUNK_API_TOKEN>" \
+oncall-migrator
 ```
 
 When performing a migration, only resources that are marked with ✅ or ⚠️ on the plan stage will be migrated.
 The migrator is designed to be idempotent, so it's safe to run it multiple times. On every migration run, the tool will
 check if the resource already exists in Grafana OnCall and will delete it before creating a new one.
+
+## PagerDuty
+
+### Overview
+
+Resources that can be migrated using this tool:
+
+- User notification rules
+- On-call schedules
+- Escalation policies
+- Services (integrations)
+- Event rules (experimental, only works with global event rulesets)
+
+### Limitations
+
+- Not all integration types are supported
+- Delays between migrated notification/escalation rules could be slightly different from original.
+  E.g. if you have a 4-minute delay between rules in PagerDuty, the resulting delay in Grafana OnCall will be 5 minutes
+- Manual changes to PD configuration may be required to migrate some resources
+
+### Prerequisites
+
+- Obtain a PagerDuty API **user token**: <https://support.pagerduty.com/docs/api-access-keys#generate-a-user-token-rest-api-key>
 
 ### Migrate unsupported integration types
 
@@ -92,18 +137,19 @@ To enable this feature, set env variable `UNSUPPORTED_INTEGRATION_TO_WEBHOOKS` t
 
 ```shell
 docker run --rm \
--e PAGERDUTY_API_TOKEN="<PAGERDUTY_API_TOKEN>" \
+-e MIGRATING_FROM="pagerduty" \
+-e MODE="migrate" \
 -e ONCALL_API_URL="<ONCALL_API_URL>" \
 -e ONCALL_API_TOKEN="<ONCALL_API_TOKEN>" \
+-e PAGERDUTY_API_TOKEN="<PAGERDUTY_API_TOKEN>" \
 -e UNSUPPORTED_INTEGRATION_TO_WEBHOOKS="true" \
--e MODE="migrate" \
-pd-oncall-migrator
+oncall-migrator
 ```
 
 Consider modifying [alert templates](https://grafana.com/docs/oncall/latest/alert-behavior/alert-templates/) of the created
 webhook integrations to adjust them for incoming payloads.
 
-## Configuration
+### Configuration
 
 Configuration is done via environment variables passed to the docker container.
 
@@ -118,9 +164,9 @@ Configuration is done via environment variables passed to the docker container.
 | `EXPERIMENTAL_MIGRATE_EVENT_RULES`            | Migrate global event rulesets to Grafana OnCall integrations.                                                                                                                                          | Boolean                             | `false` |
 | `EXPERIMENTAL_MIGRATE_EVENT_RULES_LONG_NAMES` | Include service & integrations names from PD in migrated integrations (only effective when `EXPERIMENTAL_MIGRATE_EVENT_RULES` is `true`).                                                              | Boolean                             | `false` |
 
-## Resources
+### Resources
 
-### User notification rules
+#### User notification rules
 
 The tool is capable of migrating user notification rules from PagerDuty to Grafana OnCall.
 Notification rules from the `"When a high-urgency incident is assigned to me..."` section in PagerDuty settings are
@@ -134,7 +180,7 @@ this email" error, it's possible to fix it by adding these users to your Grafana
 If there is a large number of unmatched users, please also [see the script](scripts/README.md) that can automatically
 create missing Grafana users via Grafana HTTP API.
 
-### On-call schedules
+#### On-call schedules
 
 The tool is capable of migrating on-call schedules from PagerDuty to Grafana OnCall.
 There are two ways to migrate on-call schedules:
@@ -155,7 +201,7 @@ These errors are expected and are caused by the fact that the tool can't always 
 due to differences in scheduling systems in PD and Grafana OnCall. To fix these errors, you need to manually change
 on-call shifts in PD and re-run the migration.
 
-### Escalation policies
+#### Escalation policies
 
 The tool is capable of migrating escalation policies from PagerDuty to Grafana OnCall.
 Every escalation policy will be migrated to a new Grafana OnCall escalation chain with the same name.
@@ -166,7 +212,7 @@ unmatched users or schedules that cannot be migrated won't be migrated as well.
 Note that delays between escalation steps may be slightly different in Grafana OnCall,
 see [Limitations](#limitations) for more info.
 
-### Services (integrations)
+#### Services (integrations)
 
 The tool is capable of migrating services (integrations) from PagerDuty to Grafana OnCall.
 For every service in PD, the tool will migrate all integrations to Grafana OnCall integrations.
@@ -174,7 +220,7 @@ For every service in PD, the tool will migrate all integrations to Grafana OnCal
 Any services that reference escalation policies that cannot be migrated won't be migrated as well.
 Any integrations with unsupported type won't be migrated unless `UNSUPPORTED_INTEGRATION_TO_WEBHOOKS` is set to `true`.
 
-### Event rules (global event rulesets)
+#### Event rules (global event rulesets)
 
 The tool is capable of migrating global event rulesets from PagerDuty to Grafana OnCall integrations. This feature is
 experimental and disabled by default. To enable it, set `EXPERIMENTAL_MIGRATE_EVENT_RULES` to `true`.
@@ -188,9 +234,15 @@ If you want to include service & integration names in the names of migrated inte
 `EXPERIMENTAL_MIGRATE_EVENT_RULES` is `true`). This can make searching for integrations easier,
 but it can also make the names of integrations too long.
 
-## After migration
+### After migration
 
 - Connect integrations (press the "How to connect" button on the integration page)
 - Make sure users connect their phone numbers, Slack accounts, etc. in their user settings
 - When using `SCHEDULE_MIGRATION_MODE=ical`, at some point you would probably want to recreate schedules using
   Google Calendar or Terraform to be able to modify migrated on-call schedules in Grafana OnCall
+
+## Splunk OnCall
+
+### Prerequisites
+
+- Obtain your Splunk API ID and an API token: <https://help.victorops.com/knowledge-base/api/#:~:text=currently%20in%20place.-,API%20Configuration%20in%20Splunk%20On%2DCall,-To%20access%20the>
