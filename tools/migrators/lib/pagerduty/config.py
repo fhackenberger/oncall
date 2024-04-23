@@ -1,5 +1,5 @@
 import os
-from tools.migrators.lib.base_config import *
+from lib.base_config import *
 
 PAGERDUTY_API_TOKEN = os.environ["PAGERDUTY_API_TOKEN"]
 PAGERDUTY_TO_ONCALL_CONTACT_METHOD_MAP = {
