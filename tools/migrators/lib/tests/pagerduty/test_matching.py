@@ -1,10 +1,10 @@
-from pagerduty.resources.escalation_policies import (
+from lib.pagerduty.resources.escalation_policies import (
     match_escalation_policy,
     match_escalation_policy_for_integration,
 )
-from pagerduty.resources.integrations import match_integration, match_integration_type
-from pagerduty.resources.schedules import match_schedule
-from pagerduty.resources.users import (
+from lib.pagerduty.resources.integrations import match_integration, match_integration_type
+from lib.pagerduty.resources.schedules import match_schedule
+from lib.pagerduty.resources.users import (
     match_user,
     match_users_and_schedules_for_escalation_policy,
     match_users_for_schedule,

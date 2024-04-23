@@ -1,7 +1,7 @@
-from pagerduty.resources.escalation_policies import match_escalation_policy
-from pagerduty.resources.integrations import match_integration
-from pagerduty.resources.schedules import match_schedule
-from pagerduty.resources.users import match_user
+from lib.pagerduty.resources.escalation_policies import match_escalation_policy
+from lib.pagerduty.resources.integrations import match_integration
+from lib.pagerduty.resources.schedules import match_schedule
+from lib.pagerduty.resources.users import match_user
 
 
 def test_match_user_email_case_insensitive():

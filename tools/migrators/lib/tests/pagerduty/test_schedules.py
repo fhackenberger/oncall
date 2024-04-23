@@ -1,6 +1,6 @@
 import datetime
 
-from pagerduty.resources.schedules import Restriction, Schedule
+from lib.pagerduty.resources.schedules import Restriction, Schedule
 
 user_id_map = {
     "USER_ID_1": "USER_ID_1",

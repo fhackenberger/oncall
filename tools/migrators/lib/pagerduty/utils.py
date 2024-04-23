@@ -1,6 +1,6 @@
 from typing import Callable, Optional, TypeVar
 
-from pagerduty.config import ONCALL_DELAY_OPTIONS
+from lib.pagerduty.config import ONCALL_DELAY_OPTIONS
 
 T = TypeVar("T")
 
